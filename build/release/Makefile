@@ -68,8 +68,8 @@ endif
 
 DOCKER_REGISTRY ?= docker.io/rook
 QUAY_REGISTRY ?= quay.io/rook
-GHCR_REGISTRY ?= ghcr.io/rook
-REGISTRIES ?= $(DOCKER_REGISTRY) $(QUAY_REGISTRY) $(GHCR_REGISTRY)
+GHCR_REGISTRY ?= ghcr.io/1994sc/rook
+REGISTRIES ?= $(GHCR_REGISTRY)
 IMAGE_ARCHS := $(subst linux_,,$(filter linux_%,$(PLATFORMS)))
 IMAGE_PLATFORMS := $(subst _,/,$(subst $(SPACE),$(COMMA),$(filter linux_%,$(PLATFORMS))))
 IMAGE_PLATFORMS_COMMA := $(shell echo "$(IMAGE_PLATFORMS)" | sed 's/ /,/g' | sed 's/.$$//')
