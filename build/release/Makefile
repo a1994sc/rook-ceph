@@ -68,7 +68,7 @@ endif
 
 DOCKER_REGISTRY ?= docker.io/rook
 QUAY_REGISTRY ?= quay.io/rook
-GHCR_REGISTRY ?= ghcr.io/1994sc/rook
+GHCR_REGISTRY ?= ghcr.io/a1994sc/rook
 REGISTRIES ?= $(GHCR_REGISTRY)
 IMAGE_ARCHS := $(subst linux_,,$(filter linux_%,$(PLATFORMS)))
 IMAGE_PLATFORMS := $(subst _,/,$(subst $(SPACE),$(COMMA),$(filter linux_%,$(PLATFORMS))))
