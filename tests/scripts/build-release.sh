@@ -11,6 +11,7 @@ function  build() {
     $MAKE build.all
     # quick check that go modules are tidied
     $MAKE mod.check
+    $MAKE helm.build
 }
 
 function publish() {
