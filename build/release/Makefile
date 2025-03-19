@@ -156,6 +156,13 @@ promote.helm: $(HELM)
 	$(S3_SYNC_DEL) $(HELM_TEMP) s3://$(HELM_S3_BUCKET)/$(CHANNEL)
 	rm -fr $(HELM_TEMP)
 
+define chart.targets
+publish.chart.$(1)/charts/$(2):
+	@echo === helm push $(2) to $(1)
+	$(HELM) push $(HELM_OUTPUT_DIR)/$(2)-$(VERSION).tgz $(1)/charts
+endef
+$(foreach r,$(REGISTRIES), $(foreach c,$(HELM_CHARTS),$(eval $(call chart.targets,$(r),$(c)))))
+
 # ====================================================================================
 # output
 
