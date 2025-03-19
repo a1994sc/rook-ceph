@@ -68,8 +68,8 @@ endif
 
 DOCKER_REGISTRY ?= docker.io/rook
 QUAY_REGISTRY ?= quay.io/rook
-GHCR_REGISTRY ?= ghcr.io/rook
-REGISTRIES ?= $(DOCKER_REGISTRY) $(QUAY_REGISTRY) $(GHCR_REGISTRY)
+GHCR_REGISTRY ?= ghcr.io/1994sc/rook
+REGISTRIES ?= $(GHCR_REGISTRY)
 IMAGE_ARCHS := $(subst linux_,,$(filter linux_%,$(PLATFORMS)))
 IMAGE_PLATFORMS := $(subst _,/,$(subst $(SPACE),$(COMMA),$(filter linux_%,$(PLATFORMS))))
 IMAGE_PLATFORMS_COMMA := $(shell echo "$(IMAGE_PLATFORMS)" | sed 's/ /,/g' | sed 's/.$$//')
@@ -148,22 +148,22 @@ publish.docs:
 HELM_TEMP := $(shell mktemp -d)
 HELM_URL := $(HELM_BASE_URL)/$(CHANNEL)
 
-promote.helm: $(HELM)
-#	copy existing charts to a temp dir, then combine with new charts, reindex, and upload
-	$(S3_SYNC) s3://$(HELM_S3_BUCKET)/$(CHANNEL) $(HELM_TEMP)
-	$(S3_SYNC) s3://$(S3_BUCKET)/build/$(BRANCH_NAME)/$(VERSION)/charts $(HELM_TEMP)
-	$(HELM) repo index --url $(HELM_URL) $(HELM_TEMP)
-	$(S3_SYNC_DEL) $(HELM_TEMP) s3://$(HELM_S3_BUCKET)/$(CHANNEL)
-	rm -fr $(HELM_TEMP)
+# promote.helm: $(HELM)
+# #	copy existing charts to a temp dir, then combine with new charts, reindex, and upload
+# 	$(S3_SYNC) s3://$(HELM_S3_BUCKET)/$(CHANNEL) $(HELM_TEMP)
+# 	$(S3_SYNC) s3://$(S3_BUCKET)/build/$(BRANCH_NAME)/$(VERSION)/charts $(HELM_TEMP)
+# 	$(HELM) repo index --url $(HELM_URL) $(HELM_TEMP)
+# 	$(S3_SYNC_DEL) $(HELM_TEMP) s3://$(HELM_S3_BUCKET)/$(CHANNEL)
+# 	rm -fr $(HELM_TEMP)
 
 # ====================================================================================
 # output
 
-publish.output:
-	$(S3_SYNC_DEL) $(OUTPUT_DIR) s3://$(S3_BUCKET)/build/$(BRANCH_NAME)/$(VERSION)
-promote.output:
-	$(S3_SYNC_DEL) s3://$(S3_BUCKET)/build/$(BRANCH_NAME)/$(VERSION) s3://$(S3_BUCKET)/$(CHANNEL)/$(VERSION)
-	$(S3_SYNC_DEL) s3://$(S3_BUCKET)/build/$(BRANCH_NAME)/$(VERSION) s3://$(S3_BUCKET)/$(CHANNEL)/current
+# publish.output:
+# 	$(S3_SYNC_DEL) $(OUTPUT_DIR) s3://$(S3_BUCKET)/build/$(BRANCH_NAME)/$(VERSION)
+# promote.output:
+# 	$(S3_SYNC_DEL) s3://$(S3_BUCKET)/build/$(BRANCH_NAME)/$(VERSION) s3://$(S3_BUCKET)/$(CHANNEL)/$(VERSION)
+# 	$(S3_SYNC_DEL) s3://$(S3_BUCKET)/build/$(BRANCH_NAME)/$(VERSION) s3://$(S3_BUCKET)/$(CHANNEL)/current
 
 # ====================================================================================
 # images

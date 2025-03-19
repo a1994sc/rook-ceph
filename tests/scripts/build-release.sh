@@ -37,14 +37,14 @@ if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs -d '\n')
 fi
 
-# Use Git access token for accessing the docs repo if set
-# shellcheck disable=SC2034
-export DOCS_GIT_REPO="${DOCS_GIT_REPO:-git@github.com:rook/rook.github.io.git}"
-if [ -n "${GIT_API_TOKEN}" ]; then
-    DOCS_GIT_REPO="${DOCS_GIT_REPO//git@/}"
-    DOCS_GIT_REPO="${DOCS_GIT_REPO//:/\/}"
-    export DOCS_GIT_REPO="https://${GIT_API_TOKEN}@${DOCS_GIT_REPO}"
-fi
+# # Use Git access token for accessing the docs repo if set
+# # shellcheck disable=SC2034
+# export DOCS_GIT_REPO="${DOCS_GIT_REPO:-git@github.com:rook/rook.github.io.git}"
+# if [ -n "${GIT_API_TOKEN}" ]; then
+#     DOCS_GIT_REPO="${DOCS_GIT_REPO//git@/}"
+#     DOCS_GIT_REPO="${DOCS_GIT_REPO//:/\/}"
+#     export DOCS_GIT_REPO="https://${GIT_API_TOKEN}@${DOCS_GIT_REPO}"
+# fi
 
 SHOULD_PROMOTE=true
 if [[ ${GITHUB_REF} =~ master ]]; then
