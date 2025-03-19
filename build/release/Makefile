@@ -192,14 +192,10 @@ endef
 $(foreach r,$(REGISTRIES), $(foreach i,$(IMAGES), $(foreach a,$(IMAGE_ARCHS),$(eval $(call repo.targets,$(r),$(i),$(a))))))
 
 publish.manifest.image.%: publish.all.images $(MANIFEST_TOOL)
-	$(MANIFEST_TOOL) push from-args --platforms $(IMAGE_PLATFORMS_COMMA) --template $(DOCKER_REGISTRY)/$*-ARCH:$(VERSION) --target $(DOCKER_REGISTRY)/$*:$(VERSION)
-	$(MANIFEST_TOOL) push from-args --platforms $(IMAGE_PLATFORMS_COMMA) --template $(QUAY_REGISTRY)/$*-ARCH:$(VERSION) --target $(QUAY_REGISTRY)/$*:$(VERSION)
 	$(MANIFEST_TOOL) push from-args --platforms $(IMAGE_PLATFORMS_COMMA) --template $(GHCR_REGISTRY)/$*-ARCH:$(VERSION) --target $(GHCR_REGISTRY)/$*:$(VERSION)
 
 # add the "master" tag to the master image, but do not add the "release" tag for the release channel
 promote.manifest.image.%: promote.all.images $(MANIFEST_TOOL)
-	[ "$(CHANNEL)" = "release" ] || $(MANIFEST_TOOL) push from-args --platforms $(IMAGE_PLATFORMS_COMMA) --template $(DOCKER_REGISTRY)/$*-ARCH:$(VERSION) --target $(DOCKER_REGISTRY)/$*:$(CHANNEL)
-	[ "$(CHANNEL)" = "release" ] || $(MANIFEST_TOOL) push from-args --platforms $(IMAGE_PLATFORMS_COMMA) --template $(QUAY_REGISTRY)/$*-ARCH:$(VERSION) --target $(QUAY_REGISTRY)/$*:$(CHANNEL)
 	[ "$(CHANNEL)" = "release" ] || $(MANIFEST_TOOL) push from-args --platforms $(IMAGE_PLATFORMS_COMMA) --template $(GHCR_REGISTRY)/$*-ARCH:$(VERSION) --target $(GHCR_REGISTRY)/$*:$(CHANNEL)
 
 build.images: build.all.images
