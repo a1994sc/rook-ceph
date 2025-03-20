@@ -69,7 +69,7 @@ override BRANCH_NAME := pr/$(BRANCH_NAME)
 endif
 
 DOCKER_REGISTRY ?= docker.io/allenconlon
-QUAY_REGISTRY ?= quay.io/rook
+QUAY_REGISTRY ?= quay.io/ascii17
 GHCR_REGISTRY ?= ghcr.io/a1994sc
 REGISTRIES ?= $(DOCKER_REGISTRY) $(QUAY_REGISTRY) $(GHCR_REGISTRY)
 IMAGE_ARCHS := $(subst linux_,,$(filter linux_%,$(PLATFORMS)))
