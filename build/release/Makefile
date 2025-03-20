@@ -160,9 +160,13 @@ HELM_URL := $(HELM_BASE_URL)/$(CHANNEL)
 
 define chart.targets
 build.chart.$(1)/charts/$(2):
+	@echo === update helm version
+	$(SED_IN_PLACE) 's|0.0.1|$(VERSION)|g' $(ROOT_DIR)/deploy/charts/$(2)/Chart.yaml
 	@echo === helm package $(2)
 	mkdir -p $(OUTPUT_DIR)/charts/$(2)
 	$(HELM) package $(ROOT_DIR)/deploy/charts/$(2) --destination $(OUTPUT_DIR)/charts/$(2)
+	@echo === revert helm version
+	$(SED_IN_PLACE) 's|$(VERSION)|0.0.1|g' $(ROOT_DIR)/deploy/charts/$(2)/Chart.yaml
 build.all.charts: build.chart.$(1)/charts/$(2)
 publish.chart.$(1)/charts/$(2):
 	@echo === helm push $(2) to $(1)
