@@ -183,7 +183,7 @@ $(foreach c,$(HELM_CHARTS),$(eval $(call chart.build,$(c))))
 define chart.targets
 publish.chart.$(1).$(2):
 	@echo === helm push $(2) to $(1)
-	$(HELM) push $(OUTPUT_DIR)/charts/$(2)/$(2)-$(VERSION).tgz oci://$(1)
+	$(HELM) push $(OUTPUT_DIR)/charts/$(2)/$(2)-$(HELM_CHART_VERSION).tgz oci://$(1)
 publish.all.charts: publish.chart.$(1).$(2)
 clean.chart.$(1).$(2):
 	@rm -fr $(OUTPUT_DIR).$(2)
