@@ -68,10 +68,10 @@ FLAVORS ?= output
 override BRANCH_NAME := pr/$(BRANCH_NAME)
 endif
 
-DOCKER_REGISTRY ?= docker.io/rook
+DOCKER_REGISTRY ?= docker.io/allenconlon
 QUAY_REGISTRY ?= quay.io/rook
-GHCR_REGISTRY ?= ghcr.io/a1994sc/rook
-REGISTRIES ?= $(GHCR_REGISTRY)
+GHCR_REGISTRY ?= ghcr.io/a1994sc
+REGISTRIES ?= $(DOCKER_REGISTRY) $(QUAY_REGISTRY) $(GHCR_REGISTRY)
 IMAGE_ARCHS := $(subst linux_,,$(filter linux_%,$(PLATFORMS)))
 IMAGE_PLATFORMS := $(subst _,/,$(subst $(SPACE),$(COMMA),$(filter linux_%,$(PLATFORMS))))
 IMAGE_PLATFORMS_COMMA := $(shell echo "$(IMAGE_PLATFORMS)" | sed 's/ /,/g' | sed 's/.$$//')
@@ -158,23 +158,36 @@ HELM_URL := $(HELM_BASE_URL)/$(CHANNEL)
 # 	$(S3_SYNC_DEL) $(HELM_TEMP) s3://$(HELM_S3_BUCKET)/$(CHANNEL)
 # 	rm -fr $(HELM_TEMP)
 
-define chart.targets
-build.chart.$(1)/charts/$(2):
+# set the version number. you should not need to do this
+# for the majority of scenarios.
+ifeq ($(origin HELM_CHART_VERSION), undefined)
+HELM_CHART_VERSION := $(shell echo "$(VERSION)" | sed 's/\./-/3' )
+endif
+export HELM_CHART_VERSION
+
+define chart.build
+build.chart.$(1):
 	@echo === update helm version
-	$(SED_IN_PLACE) 's|0.0.1|$(VERSION)|g' $(ROOT_DIR)/deploy/charts/$(2)/Chart.yaml
-	@echo === helm package $(2)
-	mkdir -p $(OUTPUT_DIR)/charts/$(2)
-	$(HELM) package $(ROOT_DIR)/deploy/charts/$(2) --destination $(OUTPUT_DIR)/charts/$(2)
+	$(SED_IN_PLACE) 's|appVersion: 0.0.1|appVersion: $(VERSION)|g' $(ROOT_DIR)/deploy/charts/$(1)/Chart.yaml
+	$(SED_IN_PLACE) 's|0.0.1|$(HELM_CHART_VERSION)|g' $(ROOT_DIR)/deploy/charts/$(1)/Chart.yaml
+	@echo === helm package $(1)
+	mkdir -p $(OUTPUT_DIR)/charts/$(1)
+	$(HELM) package $(ROOT_DIR)/deploy/charts/$(1) --destination $(OUTPUT_DIR)/charts/$(1)
 	@echo === revert helm version
-	$(SED_IN_PLACE) 's|$(VERSION)|0.0.1|g' $(ROOT_DIR)/deploy/charts/$(2)/Chart.yaml
-build.all.charts: build.chart.$(1)/charts/$(2)
-publish.chart.$(1)/charts/$(2):
+	$(SED_IN_PLACE) 's|appVersion: $(VERSION)|appVersion: 0.0.1|g' $(ROOT_DIR)/deploy/charts/$(1)/Chart.yaml
+	$(SED_IN_PLACE) 's|$(HELM_CHART_VERSION)|0.0.1|g' $(ROOT_DIR)/deploy/charts/$(1)/Chart.yaml
+build.all.charts: build.chart.$(1)
+endef
+$(foreach c,$(HELM_CHARTS),$(eval $(call chart.build,$(c))))
+
+define chart.targets
+publish.chart.$(1).$(2):
 	@echo === helm push $(2) to $(1)
-	$(HELM) push $(OUTPUT_DIR)/charts/$(2)/$(2)-$(VERSION).tgz oci://$(1)/charts
-publish.all.charts: publish.chart.$(1)/charts/$(2)
-clean.chart.$(1)/charts/$(2):
-	@rm -fr $(OUTPUT_DIR)/charts/$(2)
-clean.all.charts: clean.chart.$(1)/charts/$(2)
+	$(HELM) push $(OUTPUT_DIR)/charts/$(2)/$(2)-$(VERSION).tgz oci://$(1)
+publish.all.charts: publish.chart.$(1).$(2)
+clean.chart.$(1).$(2):
+	@rm -fr $(OUTPUT_DIR).$(2)
+clean.all.charts: clean.chart.$(1).$(2)
 endef
 $(foreach r,$(REGISTRIES), $(foreach c,$(HELM_CHARTS),$(eval $(call chart.targets,$(r),$(c)))))
 
