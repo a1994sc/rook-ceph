@@ -166,7 +166,7 @@ build.chart.$(1)/charts/$(2):
 build.all.charts: build.chart.$(1)/charts/$(2)
 publish.chart.$(1)/charts/$(2):
 	@echo === helm push $(2) to $(1)
-	$(HELM) push $(OUTPUT_DIR)/chart/$(2)-$(VERSION).tgz $(1)/charts
+	$(HELM) push $(OUTPUT_DIR)/chart/$(2)-$(VERSION).tgz oci://$(1)/charts
 publish.all.charts: publish.chart.$(1)/charts/$(2)
 clean.chart.$(1)/charts/$(2):
 	@rm -fr $(OUTPUT_DIR)/charts/$(2)
