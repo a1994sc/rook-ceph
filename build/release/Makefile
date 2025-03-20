@@ -59,8 +59,10 @@ REMOTE_NAME ?= origin
 
 PLATFORMS ?= $(ALL_PLATFORMS)
 
+# "helm" flavor is for pushing to s3/https endpoint
+# "charts" flavor is for pushing to oci endpoint
 ifneq ($(filter master release-%,$(BRANCH_NAME)),)
-FLAVORS ?= output images docs helm
+FLAVORS ?= output images docs helm charts
 else
 FLAVORS ?= output
 override BRANCH_NAME := pr/$(BRANCH_NAME)
@@ -157,9 +159,18 @@ HELM_URL := $(HELM_BASE_URL)/$(CHANNEL)
 # 	rm -fr $(HELM_TEMP)
 
 define chart.targets
+build.chart.$(1)/charts/$(2):
+	@echo === helm package $(2)
+	mkdir -p $(OUTPUT_DIR)/charts/$(2)
+	$(HELM) package $(ROOT_DIR)/deploy/charts/$(2) --destination $(OUTPUT_DIR)/charts/$(2)
+build.all.charts: build.chart.$(1)/charts/$(2)
 publish.chart.$(1)/charts/$(2):
 	@echo === helm push $(2) to $(1)
-	$(HELM) push $(HELM_OUTPUT_DIR)/$(2)-$(VERSION).tgz $(1)/charts
+	$(HELM) push $(OUTPUT_DIR)/chart/$(2)-$(VERSION).tgz $(1)/charts
+publish.all.charts: publish.chart.$(1)/charts/$(2)
+clean.chart.$(1)/charts/$(2):
+	@rm -fr $(OUTPUT_DIR)/charts/$(2)
+clean.all.charts: clean.chart.$(1)/charts/$(2)
 endef
 $(foreach r,$(REGISTRIES), $(foreach c,$(HELM_CHARTS),$(eval $(call chart.targets,$(r),$(c)))))
 
@@ -209,6 +220,12 @@ build.images: build.all.images
 publish.images: $(addprefix publish.manifest.image.,$(IMAGES))
 promote.images: $(addprefix promote.manifest.image.,$(IMAGES))
 clean.images: clean.all.images
+
+build.charts: build.all.charts
+publish.charts: publish.all.charts
+promote.charts:
+	@echo === charts are already promoted
+clean.charts: clean.all.charts
 
 # ====================================================================================
 # Help
