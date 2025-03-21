@@ -158,35 +158,13 @@ HELM_URL := $(HELM_BASE_URL)/$(CHANNEL)
 # 	$(S3_SYNC_DEL) $(HELM_TEMP) s3://$(HELM_S3_BUCKET)/$(CHANNEL)
 # 	rm -fr $(HELM_TEMP)
 
-# set the version number. you should not need to do this
-# for the majority of scenarios.
-ifeq ($(origin HELM_CHART_VERSION), undefined)
-HELM_CHART_VERSION := $(shell echo "$(VERSION)" | sed 's/\./-/3' )
-endif
-export HELM_CHART_VERSION
-
-define chart.build
-build.chart.$(1):
-	@echo === update helm version
-	$(SED_IN_PLACE) 's|appVersion: 0.0.1|appVersion: $(VERSION)|g' $(ROOT_DIR)/deploy/charts/$(1)/Chart.yaml
-	$(SED_IN_PLACE) 's|0.0.1|$(HELM_CHART_VERSION)|g' $(ROOT_DIR)/deploy/charts/$(1)/Chart.yaml
-	@echo === helm package $(1)
-	mkdir -p $(OUTPUT_DIR)/charts/$(1)
-	$(HELM) package $(ROOT_DIR)/deploy/charts/$(1) --destination $(OUTPUT_DIR)/charts/$(1)
-	@echo === revert helm version
-	$(SED_IN_PLACE) 's|appVersion: $(VERSION)|appVersion: 0.0.1|g' $(ROOT_DIR)/deploy/charts/$(1)/Chart.yaml
-	$(SED_IN_PLACE) 's|$(HELM_CHART_VERSION)|0.0.1|g' $(ROOT_DIR)/deploy/charts/$(1)/Chart.yaml
-build.all.charts: build.chart.$(1)
-endef
-$(foreach c,$(HELM_CHARTS),$(eval $(call chart.build,$(c))))
-
 define chart.targets
-publish.chart.$(1).$(2):
+promote.chart.$(1).$(2):
 	@echo === helm push $(2) to $(1)
-	$(HELM) push $(OUTPUT_DIR)/charts/$(2)/$(2)-$(HELM_CHART_VERSION).tgz oci://$(1)
-publish.all.charts: publish.chart.$(1).$(2)
+	$(HELM) push $(HELM_OUTPUT_DIR)/$(2)-$(VERSION).tgz oci://$(1)
+promote.all.charts: promote.chart.$(1).$(2)
 clean.chart.$(1).$(2):
-	@rm -fr $(OUTPUT_DIR).$(2)
+	@rm -fr $(HELM_OUTPUT_DIR)/$(2)-$(VERSION).tgz
 clean.all.charts: clean.chart.$(1).$(2)
 endef
 $(foreach r,$(REGISTRIES), $(foreach c,$(HELM_CHARTS),$(eval $(call chart.targets,$(r),$(c)))))
