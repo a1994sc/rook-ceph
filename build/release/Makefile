@@ -217,8 +217,6 @@ promote.images: $(addprefix promote.manifest.image.,$(IMAGES))
 clean.images: clean.all.images
 
 build.charts: build.all.charts
-publish.charts:
-	@echo === oci charts only published on release
 promote.charts: promote.all.charts
 clean.charts: clean.all.charts
 
